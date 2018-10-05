@@ -3,14 +3,16 @@ Work in progress
 
 
 TODO:
-- [ ] - create simple server
+- [x] - create simple server
 
 `Implement`
-- [ ] - Logging in
-- [ ] - Registration
+- [x] - Logging in
+- [x] - Registration
 - [ ] - Chat
+- [ ] - Avatars
+- [ ] - Sending files
 
 `-----`
-- [ ] - Connect to db
+- [x] - Connect to db
 - [ ] - Prettyfy it  
 - [ ] - ..

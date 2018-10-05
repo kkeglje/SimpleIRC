@@ -1,0 +1,26 @@
+<!doctype html>
+
+{% block body %}
+{% if session['logged_in'] %}
+<head>
+   <meta http-equiv="refresh" content="2;url=/" />
+</head>
+<p>You're logged in already!</p>
+<p>Redirecting to home...</p>
+{% else %}
+<head>
+<style>
+body {background-color: powderblue;}
+p   {color: blue;}
+</style>
+</head>
+<form action="{{ url_for('login') }}" method="POST">
+  <input type="username" name="username" placeholder="Username">
+  <input type="password" name="password" placeholder="Password">
+  <input type="submit" value="Log in">
+</form>
+<p> 
+<p><a href="{{ url_for('reg') }}">Sign up</a>
+{% endif %}
+{% endblock %}
+
