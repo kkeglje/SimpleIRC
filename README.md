@@ -9,7 +9,7 @@ TODO:
 - [x] - Logging in
 - [x] - Registration
 - [ ] - Chat
-- [ ] - Avatars
+- [ ] - Profile pages
 - [ ] - Sending files
 
 `-----`
