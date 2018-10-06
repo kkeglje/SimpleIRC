@@ -19,19 +19,20 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True)
     email = db.Column(db.String(120))
     password = db.Column(db.String(64))
-    
-    # Flask-Login integration
-    def is_authenticated(self):
-        return True
+    admin = db.Column(db.String(5))
 
-    def is_active(self):
-        return True
+    # # Flask-Login integration
+    # def is_authenticated(self):
+    #     return True
 
-    def is_anonymous(self):
-        return False
+    # def is_active(self):
+    #     return True
+
+    # def is_anonymous(self):
+    #     return False
     
-    def get_id(self):
-        return self.id
+    # def get_id(self):
+    #     return self.id
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -40,7 +41,7 @@ class User(db.Model):
 def test_db():
     db.drop_all()
     db.create_all()
-    test = User(username="test",email="test@test.test",password=generate_password_hash("test")[20:])
+    test = User(username="test",email="test@test.test",password=generate_password_hash("test")[20:],admin="True")
     db.session.add(test)
     db.session.commit()
 
@@ -56,6 +57,14 @@ def login_required(test):
             return redirect(url_for('home'))
     return wrap
 
+def admin_required(test):
+    @wraps(test)
+    def wrap(*args,**kwargs):
+        if session['admin']==True:
+            return test(*args,**kwargs)
+        else:
+            return 'You are not authorized to access that site! <a href="/">Go back</a>'
+    return wrap
 
 # =======APP.ROUTE========
 
@@ -75,16 +84,23 @@ def login():
     quer = User.query.filter_by(username=formName).first()
     if quer == None:
         session['logged_in'] = False
+        session['admin'] = False
         return home()
     if check_password_hash("pbkdf2:sha256:50000$"+quer.password,user.password):
+        if quer.admin == "True":
+            session['admin'] = True
+        else: 
+            session['admin'] = False    
         session['logged_in'] = True
         return home()
     else:
         session['logged_in'] = False
+        session['admin'] = False
         return home()
 
     print('Username: {}\nPassword: {}'.format(formName,formPassword))
-    return 
+    
+
 @app.route('/registration',methods=['GET','POST'])
 def reg():
     form = RegistrationForm()
@@ -92,7 +108,7 @@ def reg():
         if form.validate() == False:
             return render_template('Registration/registration.html',form=form)
         else:
-            user = User(username=form.username.data,email=form.email.data,password=generate_password_hash(form.password.data)[20:])
+            user = User(admin="False",username=form.username.data,email=form.email.data,password=generate_password_hash(form.password.data)[20:])
             db.session.add(user)
             db.session.commit()
             return render_template('home.html')
@@ -103,8 +119,13 @@ def reg():
 @login_required
 def logout():
     session.pop('logged_in',None)
+    session.pop('admin', None)
     return redirect(url_for('home'))
 
+@app.route('/show_users')
+@admin_required
+def show_users():
+    return render_template('show_users.html',User=User.query.all())
 
 def startServer():
     print("Checking for database..")
