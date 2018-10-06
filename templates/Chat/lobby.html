@@ -1,0 +1,31 @@
+<!doctype html>
+
+<head></head>
+    <body>
+      
+        <h3>
+         <a href = "{{ url_for('home') }}">Go back</a>
+        </h3>
+        <h4>
+            <a href="{{ url_for('create_room') }}">Create new room</a>
+        </h4>
+      <hr/>
+      <h3>Users</h3>
+      <table border=1px>
+         <thead>
+            <tr>
+               <th>Username</th>
+			   <th>ADMIN</th>
+            </tr>
+         </thead>
+         <tbody>
+            {% for user in User %}
+               <tr>
+                  <td><a href =user.username>{{ user.username }}</a></td>
+                  <td>{{ user.admin }}</td>
+               </tr>
+            {% endfor %}
+         </tbody>
+      </table>
+   </body>
+</html>

@@ -2,7 +2,10 @@ from server import *
 
 
 def main():
-    print("Starting server..")
+    print("""------------------------------------\
+    \n<<Starting app>>\
+    \n------------------------------------\
+    """)
     startServer()
     
 

@@ -1,12 +1,30 @@
 <!doctype html>
+
+{% block body %}
+{% if session['admin'] %}
 <head>
-<style>
-body {background-color: black;}
-h1   {color: white;}
-p    {color: white;}
-</style>
+    <style>
+    body {background-color: black;}
+    h1   {color: white;}
+    p    {color: white;}
+    </style>
 </head>
-<title>Welcome to starting page</title>
-<h1>Welcome home</h1>
-<p><a href="{{ url_for('show_users') }}">Admin page</a>
-<p><a href="{{ url_for('logout') }}">Logout</a>
+    <title>Welcome to starting page</title>
+    <h1>Welcome home</h1>
+    <p><a href="{{ url_for('show_users') }}">Admin page</a>
+    <p><a href="{{ url_for('chat') }}">Chat</a>
+    <p><a href="{{ url_for('logout') }}">Logout</a>
+{% else %}
+<head>
+    <style>
+    body {background-color: black;}
+    h1   {color: white;}
+    p    {color: white;}
+    </style>
+</head>
+        <title>Welcome to starting page</title>
+        <h1>Welcome home</h1>
+        <p><a href="{{ url_for('chat') }}">Chat</a>
+        <p><a href="{{ url_for('logout') }}">Logout</a>
+{% endif %}
+{% endblock %}

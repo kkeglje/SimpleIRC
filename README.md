@@ -8,7 +8,8 @@ TODO:
 `Implement`
 - [x] - Logging in
 - [x] - Registration
-- [ ] - Chat
+- [x] - Session keys
+- [-] - Chat (Basic room creating available but still no chatting) 
 - [ ] - Avatars
 - [ ] - Sending files
 
