@@ -9,6 +9,7 @@ TODO:
 - [x] - Logging in
 - [x] - Registration
 - [x] - Session keys
+- [ ] - User created keys
 - [ ] - Chat (Basic room creating available but still no chatting) 
 - [ ] - Avatars
 - [ ] - Profile pages
