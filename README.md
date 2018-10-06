@@ -11,6 +11,7 @@ TODO:
 - [x] - Session keys
 - [-] - Chat (Basic room creating available but still no chatting) 
 - [ ] - Avatars
+- [ ] - Profile pages
 - [ ] - Sending files
 
 `-----`
