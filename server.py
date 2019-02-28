@@ -1,4 +1,4 @@
-from flask import Flask,render_template,session,flash,url_for,redirect,request
+from flask import Flask,render_template,session,flash,url_for,redirect, request as frequest
 from functools import wraps
 import os
 from form import RegistrationForm
