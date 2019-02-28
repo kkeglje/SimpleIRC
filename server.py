@@ -8,49 +8,54 @@ import random, string,datetime
 
 
 app = Flask(__name__)
-app.secret_key = os.urandom(12)
+app.secret_key = "SESSION_RANDOM_KEY_CHANGE_THIS_IN_PRODUCTION"
 app.config['DATABASE_FILE'] = 'users.sqlite'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['APP_DIR'] = os.path.realpath(os.path.dirname(__file__))
+
 db = SQLAlchemy(app)
+
 ROOM_IDs = []
 
-
-# =======CLASSES=======
+# =========CLASSES=========
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True)
-    email = db.Column(db.String(120))
-    password = db.Column(db.String(64))
+    '''
+    username[string],
+    admin[string(True or False)],
+    password[hashed str],
+    email[string]
+    '''
+    id = db.Column('user_id',db.Integer,primary_key=True)
+    username = db.Column(db.String(16), unique=True,nullable=False)
     admin = db.Column(db.String(5))
-
+    password = db.Column(db.String(64),nullable=False)
+    email = db.Column(db.String(64),nullable=False)
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<User {}>'.format(self.username)
 
 # =======Functions=======
 def test_db():
     db.drop_all()
     db.create_all()
-    test = User(username="test",email="test@test.test",password=generate_password_hash("test")[20:],admin="True")
+    test = User(username="admin",email="admin@admin",password=generate_password_hash("admin")[20:],admin="True")
     db.session.add(test)
     db.session.commit()
 
-def generateSessionKeys():
+def generateRoomKeys():
     global ROOM_IDs
-    f = open("sessionKeys.txt",'w')
+    f = open("roomKeys.txt",'w')
     for w in range(100):
         s=[]
         for l in range(16):
             s.append(string.ascii_letters[random.randint(0,51)])
         ROOM_IDs.append(''.join(s))
-    print("Session keys generated and saved in sessionKeys.txt")
+    print("Session keys generated and saved in roomKeys.txt")
     f.write("SESSION KEYS GENERATED "+str(datetime.datetime.now())[:-7]+"\n--------\n"+'\n'.join(ROOM_IDs))
-    
     f.close()
 
 
-
+# ========Auth=========
 def login_required(test):
     @wraps(test)
     def wrap(*args, **kwargs):
@@ -80,48 +85,90 @@ def home():
     else:
         return render_template('home.html')
 
-@app.route('/login',methods=['POST'])
+@app.route('/login',methods=['GET','POST'])
 def login():
-    formName = request.form['username']
-    formPassword = request.form['password']
-    user = User(username=formName,password=formPassword)
-    quer = User.query.filter_by(username=formName).first()
-    if quer == None:
-        session['logged_in'] = False
-        session['admin'] = False
-        return home()
-    if check_password_hash("pbkdf2:sha256:50000$"+quer.password,user.password):
-        if quer.admin == "True":
+    error = None
+    if frequest.method == 'POST':
+        uname = frequest.form['username']
+        passw = frequest.form['password']
+
+        if uname=="test":
+            print("test")
+        t = User.query.filter_by(username=uname).first()
+        if t==None:
+            error = "There is no user with that name"
+        elif t.admin == "True" and check_password_hash("pbkdf2:sha256:50000$"+t.password,passw):
             session['admin'] = True
-        else: 
-            session['admin'] = False    
-        session['logged_in'] = True
-        return home()
-    else:
-        session['logged_in'] = False
-        session['admin'] = False
-        return home()
-    
+            session['logged_in'] = True
+            return redirect(url_for('home'))
+        elif check_password_hash("pbkdf2:sha256:50000$"+t.password,passw):
+            session['logged_in'] = True
+            session['admin'] = False
+            return redirect(url_for('home'))
+        else:
+            error = "Wrong username/password"
+    return render_template('login.html',error=error)
+ 
 
 @app.route('/registration',methods=['GET','POST'])
-def reg():
-    form = RegistrationForm()
-    if request.method == 'POST':
-        if form.validate() == False:
-            return render_template('Registration/registration.html',form=form)
-        else:
-            user = User(admin="False",username=form.username.data,email=form.email.data,password=generate_password_hash(form.password.data)[20:])
-            db.session.add(user)
-            db.session.commit()
-            return render_template('home.html')
+def registration():
+    error = None
+    if frequest.method == 'POST':
+        uname = frequest.form['username']
+        passw = frequest.form['password']
+        rpassw = frequest.form['rpassword']
+        email = frequest.form['email']
+        setToAdmin = "False"
+        if frequest.form.get('admin'):
+            setToAdmin = "True"
+        if User.query.filter_by(username=uname).first() != None:
+            error = ""
+            return render_template(
+                    'registration.html',
+                    error=jsonify({
+                            'status': 400,
+                            'message': 'Username already taken!'
+                        })
+                    )
+        elif User.query.filter_by(email=email).first() != None:
+            return render_template(
+                    'registration.html',
+                    error=jsonify({
+                            'status': 400,
+                            'message': 'Email already taken!'
+                        })
+                    )
+        elif passw!=rpassw:
+            return render_template(
+                    'registration.html',
+                    error=jsonify({
+                            'status': 400,
+                            'message': 'Your passwords dont match'
+                        })
+                    )    
+        if uname == "" or passw == "" or email == "":
+            return render_template(
+                        'registration.html',
+                        error=jsonify({
+                            'status': 400,
+                            'message': 'Please fill in empty fields'
+                            })
+                        )
+        u = User(username=uname,email=email, admin=setToAdmin ,password=generate_password_hash(passw)[20:])        
+        db.session.add(u)
+        db.session.commit()
+        backup_db(User,Food)
+        print("Backup complete!")
+        return redirect(url_for('success'))
     else:
-        return render_template('Registration/registration.html',form=form)
+        return render_template('registration.html',error=error)
+
 
 @app.route('/logout')
 @login_required
 def logout():
-    session.pop('logged_in',None)
-    session.pop('admin', None)
+    session.pop('logged_in',False)
+    session.pop('admin', False)
     return redirect(url_for('home'))
 
 @app.route('/show_users')
@@ -146,8 +193,7 @@ def create_room():
     </p>\n<a href="/chat/{} ">Join room</a> """.format(sess,sess))
     f.close()
     return render_template('Chat/key.html')
-
-    
+ 
 
 @app.route('/chat/<room>',methods=['GET','POST'])
 @login_required
@@ -155,21 +201,10 @@ def room(room):
     return "ROOM KEY= %s" % room
 
 
-
 # =========ERROR HANDLERS=========
-
-@app.errorhandler(401)
-def unauthorized_access(e):
-    return render_template('Errors/401.html'),401
-
 @app.errorhandler(404)
-def page_not_found(e):
-    return render_template('Errors/404.html'),404
-
-@app.errorhandler(405)
-def method_not_allowed(e):
-    return render_template('Errors/405.html'),405
-# ===========================
+def not_found():
+    return "This is a 404 page(work in progress)"
 
 
 def startServer():
@@ -183,6 +218,6 @@ def startServer():
 
     print("    <<Starting server>>")
     print("<<Generating session keys>>")
-    generateSessionKeys()
+    generateRoomKeys()
 
     app.run(host='0.0.0.0',debug=True)

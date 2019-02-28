@@ -1,26 +1,45 @@
-<!doctype html>
-
-{% block body %}
-{% if session['logged_in'] %}
-<head>
-   <meta http-equiv="refresh" content="2;url=/" />
-</head>
-<p>You're logged in already!</p>
-<p>Redirecting to home...</p>
-{% else %}
-<head>
-<style>
-body {background-color: powderblue;}
-p   {color: blue;}
-</style>
-</head>
-<form action="{{ url_for('login') }}" method="POST">
-  <input type="username" name="username" placeholder="Username">
-  <input type="password" name="password" placeholder="Password">
-  <input type="submit" value="Log in">
-</form>
-<p> 
-<p><a href="{{ url_for('reg') }}">Sign up</a>
-{% endif %}
-{% endblock %}
-
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Log in</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  </head>
+  <style>
+    *{
+        align-content: center;
+        text-align: center;
+    }
+    input{
+      border-radius: 15px;
+    }
+    input:focus{
+      border-color: aquamarine;
+    }
+    li{
+      display: inline-block;
+      list-style: none;
+    }
+    @media (max-width:786px){
+      li{
+        display: block;
+      }
+    }
+  </style>
+  <body>
+    <div class="container">
+      <h1>Please login</h1>
+      <br>
+      <form action="{{ url_for('login') }}" method="post">
+        <ul>
+          <li><input type="text" placeholder="Username" name="username" value="{{ request.form.username }}"></li>
+          <li><input type="password" placeholder="Password" name="password" value="{{ request.form.password }}"></li>
+          <li><input class="btn btn-default" type="submit" value="Login"></li>
+        </ul>
+      </form>
+      <a href="{{ url_for('registration') }}">New here?</a>
+      {% if error %}
+        <p class="error"><strong>Error:</strong> {{ error }}
+      {% endif %}
+    </div>
+  </body>
+</html>
