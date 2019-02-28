@@ -1,10 +1,8 @@
-from flask import Flask,render_template,session,flash,url_for,redirect, request as frequest
+from flask import Flask,render_template,session,flash,url_for,redirect, request as frequest, jsonify
 from functools import wraps
-import os
-from form import RegistrationForm
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash,check_password_hash
-import random, string,datetime
+import random, string, datetime, os
 
 
 app = Flask(__name__)

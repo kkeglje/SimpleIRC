@@ -1,21 +1,4 @@
 # SimpleIRC
 Work in progress
 
-
-TODO:
-- [x] - create simple server
-
-`Implement`
-- [x] - Logging in
-- [x] - Registration
-- [x] - Session keys
-- [ ] - User created keys
-- [ ] - Chat (Basic room creating available but still no chatting) 
-- [ ] - Avatars
-- [ ] - Profile pages
-- [ ] - Sending files
-
-`-----`
-- [x] - Connect to db
-- [ ] - Prettyfy it  
-- [ ] - ..
+Current stage: Complete code refactor, this will be implemented with RESTfull architectural style
