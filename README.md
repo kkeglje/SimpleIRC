@@ -8,4 +8,4 @@ Current stage: Complete code refactor, this will be implemented with RESTfull ar
 * [ ] admin account
 * [ ] more rooms (url binded)
 * [ ] switch rooms with side menue
-* [ ] chat interpretations ( etc. /shruh -> ¯\_(ツ)_/¯ )
+* [ ] chat interpretations ( etc. /shruh -> ¯\\_(ツ)_/¯ )
