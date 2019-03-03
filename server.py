@@ -1,7 +1,7 @@
-from flask import Flask,render_template,session,flash,url_for,redirect, request as frequest, jsonify
+from flask import Flask, render_template, session, flash, url_for, redirect, request as frequest, jsonify
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash,check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 import random, string, datetime, os
 
 
@@ -24,11 +24,11 @@ class User(db.Model):
     password[hashed str],
     email[string]
     '''
-    id = db.Column('user_id',db.Integer,primary_key=True)
-    username = db.Column(db.String(16), unique=True,nullable=False)
+    id = db.Column('user_id', db.Integer, primary_key=True)
+    username = db.Column(db.String(16), unique=True, nullable=False)
     admin = db.Column(db.String(5))
-    password = db.Column(db.String(64),nullable=False)
-    email = db.Column(db.String(64),nullable=False)
+    password = db.Column(db.String(64), nullable=False)
+    email = db.Column(db.String(64), nullable=False)
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
@@ -36,7 +36,7 @@ class User(db.Model):
 def test_db():
     db.drop_all()
     db.create_all()
-    test = User(username="admin",email="admin@admin",password=generate_password_hash("admin")[20:],admin="True")
+    test = User(username="admin", email="admin@admin", password=generate_password_hash("admin")[20:], admin="True")
     db.session.add(test)
     db.session.commit()
 
@@ -44,9 +44,9 @@ def generateRoomKeys():
     global ROOM_IDs
     f = open("roomKeys.txt",'w')
     for w in range(100):
-        s=[]
+        s = []
         for l in range(16):
-            s.append(string.ascii_letters[random.randint(0,51)])
+            s.append(string.ascii_letters[random.randint(0, 51)])
         ROOM_IDs.append(''.join(s))
     print("Session keys generated and saved in roomKeys.txt")
     f.write("SESSION KEYS GENERATED "+str(datetime.datetime.now())[:-7]+"\n--------\n"+'\n'.join(ROOM_IDs))
@@ -83,7 +83,7 @@ def home():
     else:
         return render_template('home.html')
 
-@app.route('/login',methods=['GET','POST'])
+@app.route('/login', methods=['GET','POST'])
 def login():
     error = None
     if frequest.method == 'POST':
@@ -95,20 +95,20 @@ def login():
         t = User.query.filter_by(username=uname).first()
         if t==None:
             error = "There is no user with that name"
-        elif t.admin == "True" and check_password_hash("pbkdf2:sha256:50000$"+t.password,passw):
+        elif t.admin == "True" and check_password_hash("pbkdf2:sha256:50000$"+t.password, passw):
             session['admin'] = True
             session['logged_in'] = True
             return redirect(url_for('home'))
-        elif check_password_hash("pbkdf2:sha256:50000$"+t.password,passw):
+        elif check_password_hash("pbkdf2:sha256:50000$"+t.password, passw):
             session['logged_in'] = True
             session['admin'] = False
             return redirect(url_for('home'))
         else:
             error = "Wrong username/password"
-    return render_template('login.html',error=error)
+    return render_template('login.html', error=error)
  
 
-@app.route('/registration',methods=['GET','POST'])
+@app.route('/registration', methods=['GET','POST'])
 def registration():
     error = None
     if frequest.method == 'POST':
@@ -152,48 +152,46 @@ def registration():
                             'message': 'Please fill in empty fields'
                             })
                         )
-        u = User(username=uname,email=email, admin=setToAdmin ,password=generate_password_hash(passw)[20:])        
+        u = User(username=uname, email=email, admin=setToAdmin, password=generate_password_hash(passw)[20:])        
         db.session.add(u)
         db.session.commit()
-        backup_db(User,Food)
-        print("Backup complete!")
         return redirect(url_for('success'))
     else:
-        return render_template('registration.html',error=error)
+        return render_template('registration.html', error=error)
 
 
 @app.route('/logout')
 @login_required
 def logout():
-    session.pop('logged_in',False)
+    session.pop('logged_in', False)
     session.pop('admin', False)
     return redirect(url_for('home'))
 
 @app.route('/show_users')
 @admin_required
 def show_users():
-    return render_template('show_users.html',User=User.query.all())
+    return render_template('show_users.html', User=User.query.all())
 
 @app.route('/chat')
 @login_required
 def chat():
-    return render_template('Chat/lobby.html',User=User.query.all())
+    return render_template('Chat/lobby.html', User=User.query.all())
 
-@app.route('/create_room',methods=['GET'])
+@app.route('/create_room', methods=['GET'])
 @login_required
 def create_room():
     global ROOM_IDs
-    rn = random.randint(0,len(ROOM_IDs)-1)
+    rn = random.randint(0, len(ROOM_IDs)-1)
     sess = ROOM_IDs[rn]
     ROOM_IDs.remove(sess)
     f = open(app.config['APP_DIR']+"/templates/Chat/key.html",'w')
     f.write("""<p>{}  <- this is your key, please copy it and send it to your friend\
-    </p>\n<a href="/chat/{} ">Join room</a> """.format(sess,sess))
+    </p>\n<a href="/chat/{} ">Join room</a> """.format(sess, sess))
     f.close()
     return render_template('Chat/key.html')
  
 
-@app.route('/chat/<room>',methods=['GET','POST'])
+@app.route('/chat/<room>', methods=['GET','POST'])
 @login_required
 def room(room):
     return "ROOM KEY= %s" % room
@@ -207,7 +205,7 @@ def not_found():
 
 def startServer():
     print(" <<Checking for database>>")
-    db_path = os.path.join(app.config['APP_DIR'],app.config['DATABASE_FILE'])
+    db_path = os.path.join(app.config['APP_DIR'], app.config['DATABASE_FILE'])
     if not os.path.exists(db_path):
         print("<<Cannot find db>> ->Building test base..")
         test_db()
@@ -218,4 +216,4 @@ def startServer():
     print("<<Generating session keys>>")
     generateRoomKeys()
 
-    app.run(host='0.0.0.0',debug=True)
+    app.run(host='0.0.0.0', debug=True)
