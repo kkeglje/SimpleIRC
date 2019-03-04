@@ -3,7 +3,7 @@ from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import random, string, datetime, os
-
+from utils import utilities
 
 app = Flask(__name__)
 app.secret_key = "SESSION_RANDOM_KEY_CHANGE_THIS_IN_PRODUCTION"
@@ -14,9 +14,8 @@ app.config['APP_DIR'] = os.path.realpath(os.path.dirname(__file__))
 
 db = SQLAlchemy(app)
 
-ROOM_IDs = []
 
-# =========CLASSES=========
+# Classes
 class User(db.Model):
     '''
     username[string],
@@ -32,26 +31,6 @@ class User(db.Model):
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
-# =======Functions=======
-def test_db():
-    db.drop_all()
-    db.create_all()
-    test = User(username="admin", email="admin@admin", password=generate_password_hash("admin")[20:], admin="True")
-    db.session.add(test)
-    db.session.commit()
-
-def generateRoomKeys():
-    global ROOM_IDs
-    f = open("roomKeys.txt",'w')
-    for w in range(100):
-        s = []
-        for l in range(16):
-            s.append(string.ascii_letters[random.randint(0, 51)])
-        ROOM_IDs.append(''.join(s))
-    print("Session keys generated and saved in roomKeys.txt")
-    f.write("SESSION KEYS GENERATED "+str(datetime.datetime.now())[:-7]+"\n--------\n"+'\n'.join(ROOM_IDs))
-    f.close()
-
 
 # ========Auth=========
 def login_required(test):
@@ -60,8 +39,13 @@ def login_required(test):
         if 'logged_in' in session:
             return test(*args,**kwargs)
         else:
-            flash("You need to login first.")
-            return redirect(url_for('home'))
+            return render_template(
+                    '401.html',
+                    error=jsonify({
+                            'status': 401,
+                            'message': 'Please login'
+                        })
+                    )    
     return wrap
 
 def admin_required(test):
@@ -70,18 +54,20 @@ def admin_required(test):
         if session['admin']==True:
             return test(*args,**kwargs)
         else:
-            return 'You are not authorized to access that site! <a href="/">Go back</a>'
+            return render_template(
+                    '403.html',
+                    error=jsonify({
+                            'status': 403,
+                            'message': 'You are not authorized to access that site!'
+                        })
+                    )   
     return wrap
 
+
 # =======APP.ROUTE========
-
-
 @app.route('/')
 def home():
-    if not session.get('logged_in'):
-        return render_template('login.html')
-    else:
-        return render_template('home.html')
+    return render_template('index.html')
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -89,9 +75,6 @@ def login():
     if frequest.method == 'POST':
         uname = frequest.form['username']
         passw = frequest.form['password']
-
-        if uname=="test":
-            print("test")
         t = User.query.filter_by(username=uname).first()
         if t==None:
             error = "There is no user with that name"
@@ -167,53 +150,21 @@ def logout():
     session.pop('admin', False)
     return redirect(url_for('home'))
 
-@app.route('/show_users')
-@admin_required
-def show_users():
-    return render_template('show_users.html', User=User.query.all())
-
-@app.route('/chat')
-@login_required
-def chat():
-    return render_template('Chat/lobby.html', User=User.query.all())
-
-@app.route('/create_room', methods=['GET'])
-@login_required
-def create_room():
-    global ROOM_IDs
-    rn = random.randint(0, len(ROOM_IDs)-1)
-    sess = ROOM_IDs[rn]
-    ROOM_IDs.remove(sess)
-    f = open(app.config['APP_DIR']+"/templates/Chat/key.html",'w')
-    f.write("""<p>{}  <- this is your key, please copy it and send it to your friend\
-    </p>\n<a href="/chat/{} ">Join room</a> """.format(sess, sess))
-    f.close()
-    return render_template('Chat/key.html')
- 
-
-@app.route('/chat/<room>', methods=['GET','POST'])
-@login_required
-def room(room):
-    return "ROOM KEY= %s" % room
-
-
-# =========ERROR HANDLERS=========
-@app.errorhandler(404)
-def not_found():
-    return "This is a 404 page(work in progress)"
-
 
 def startServer():
     print(" <<Checking for database>>")
     db_path = os.path.join(app.config['APP_DIR'], app.config['DATABASE_FILE'])
     if not os.path.exists(db_path):
         print("<<Cannot find db>> ->Building test base..")
-        test_db()
+        utilities.test_db(db,User(username="admin", email="admin@admin", password=generate_password_hash("admin")[20:], admin="True"))
     else:
         print("    <<Found database>>")
 
     print("    <<Starting server>>")
-    print("<<Generating session keys>>")
-    generateRoomKeys()
+    
+    #TODO:
+    #print("<<Generating session keys>>")
+    #generateRoomKeys()
 
     app.run(host='0.0.0.0', debug=True)
+
