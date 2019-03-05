@@ -2,8 +2,9 @@ from flask import Flask, render_template, session, flash, url_for, redirect, req
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-import random, string, datetime, os
+import random, string, datetime, os, OpenSSL
 from utils import utilities
+
 
 app = Flask(__name__)
 app.secret_key = "SESSION_RANDOM_KEY_CHANGE_THIS_IN_PRODUCTION"
@@ -14,6 +15,7 @@ app.config['APP_DIR'] = os.path.realpath(os.path.dirname(__file__))
 
 db = SQLAlchemy(app)
 
+users = ["test"]
 
 # Classes
 class User(db.Model):
@@ -151,6 +153,27 @@ def logout():
     return redirect(url_for('home'))
 
 
+@app.route('addUser',methods=['POST'])
+def addUsere():
+    if frequest.method == 'POST':
+        uname = frequest['guestName']
+        for u in users:
+            if u == uname:
+                return jsonify({
+                    'message' : 'Already user with that name'
+                })
+        users.append(uname)
+        return jsonify({
+            'status' : 200,
+            'message' : 'Success'
+        })
+    else:
+        return jsonify({
+            'status' : 401,
+            'message' : 'Please use POST request'
+        })
+
+
 def startServer():
     print(" <<Checking for database>>")
     db_path = os.path.join(app.config['APP_DIR'], app.config['DATABASE_FILE'])
@@ -166,5 +189,5 @@ def startServer():
     #print("<<Generating session keys>>")
     #generateRoomKeys()
 
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=True, ssl_context='adhoc')
 

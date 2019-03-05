@@ -1,0 +1,24 @@
+#app{
+    height: 100vh;
+    background-color: rgb(142, 221, 195);
+}
+#rooms{
+    text-align: left;
+    background-color: rgb(243, 146, 146);
+    height: 100vh;
+}
+#chat{
+    text-align: center;
+    background-color: rgb(225, 243, 146);
+    height: 100vh;
+}
+#users{
+    text-align: right;
+    background-color: rgb(156, 146, 243);
+    height: 100vh;
+}
+
+#guestName{
+    width: 30px;
+    height: 10px;
+}

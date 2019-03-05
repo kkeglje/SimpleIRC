@@ -5,6 +5,7 @@
         <meta charset="utf-8">
         <!-- Add this to <head> -->
         <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+        <link type="text/css" rel="stylesheet" href="../static/index.css" />
         <link
           type="text/css"
           rel="stylesheet"
@@ -14,13 +15,68 @@
         <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
         <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
     </head>
+        <!-------POPOUT MODAL------->
+        <script type="text/x-template" id="modal-template">
+        <transition name="modal">
+            <div class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+                <div class="modal-header">
+                    <slot name="header">
+                    default header
+                    </slot>
+                </div>
+                <div class="modal-body">
+                    <slot name="body">
+                    default body
+                    </slot>
+                </div>
+                <div class="modal-footer">
+                    <slot name="footer">
+                    default footer
+                    </slot>
+                </div>
+                </div>
+            </div>
+            </div>
+        </transition>
+        </script>
+
     <body>
         <div id="app">
-            
+                <modal v-if="showModal" @close="showModal = false">
+                    <h3 slot="header">Enter your temporary username</h3>
+                    <div slot="body">
+                        <input type="text" id="guestName"><br>
+                        <p v-if="error">[[ error ]]</p>
+                    </div>
+                    <div slot="footer">
+                        <button class="btn btn-danger" @click="showModal = false;newUser()">
+                            Join
+                        </button>
+                    </div>
+              </modal>
+            <b-container>
+                <b-row>
+                    <!------Rooms------->
+                    <b-col cols="2" id="rooms">
+                        Rooms
 
-            <b-button-group>
-                <b-button v-on:click="test()">Button 1</b-button>
-            </b-button-group>
+                    </b-col>
+
+                    <!------Chat------->
+                    <b-col cols="8" id="chat">
+                        Chat
+
+                    </b-col>
+
+                    <!------Users------->
+                    <b-col cols="2" id="users">
+                        Users
+
+                    </b-col>
+                </b-row>
+            </b-container>
         </div>
 
         <script src="../static/index.js"></script>
