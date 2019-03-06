@@ -14,6 +14,9 @@
         <script src="//unpkg.com/@babel/polyfill@latest/dist/polyfill.min.js"></script>
         <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
         <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+
+        <!--AXIOS-->
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     </head>
         <!-------POPOUT MODAL------->
         <script type="text/x-template" id="modal-template">
@@ -48,10 +51,10 @@
                     <h3 slot="header">Enter your temporary username</h3>
                     <div slot="body">
                         <input type="text" id="guestName"><br>
-                        <p v-if="error">[[ error ]]</p>
+                        <div v-if="error != 'false'">[[ error ]]</div>
                     </div>
                     <div slot="footer">
-                        <button class="btn btn-danger" @click="showModal = false;newUser()">
+                        <button class="btn btn-danger" @click="newUser()">
                             Join
                         </button>
                     </div>
@@ -72,7 +75,12 @@
 
                     <!------Users------->
                     <b-col cols="2" id="users">
-                        Users
+                        <div>Users</div>
+                        <ul>
+                            <li v-for="(data,index) in users" :key='index'>
+                                <p id="userName">[[ data ]]</p>
+                            </li>
+                        </ul>
 
                     </b-col>
                 </b-row>

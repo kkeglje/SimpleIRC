@@ -5,24 +5,48 @@ Vue.component('modal',{
 window.app = new Vue({
     el: '#app',
     data: {
-        users:[],
+        users: [],
+        user: "",
         showModal: true,
-        error: null
+        error: 'false'
     },
     delimiters: ['[[',']]'],
     methods: {
         newUser(){
-            var user = document.getElementById("guestName").value;
-            console.log(user);
-            this.users.forEach(element => {
-                if(element==user){
-                    this.showModal = true;
-                    error = "User with that name already exists!";
-                    return
-                }
-            });
-            this.users.push(user);
-
+            app.user = document.getElementById("guestName").value
+            axios
+                .post('addUser',{'guestName' : app.user})
+                .then(
+                    function(response){
+                        if(response.data['status'] == 200){
+                            app.users.push(app.user);
+                            app.showModal = false;
+                            app.error = 'false';
+                        }
+                        else{
+                            app.showModal = true;
+                            app.error = response.data['message'];
+                            console.log(this.error);
+                        };
+                    },
+                    app.updateUsers()
+                )
+        },
+        updateUsers(){
+            axios
+                .get('/getUsers')
+                .then(
+                    response=>(app.users = response.data['users'])
+                )
+        },
+        removeUser(){
+            axios
+                .post('/removeUser',{'guestName': app.user})
         }
+    },
+    created(){
+        this.interval = setInterval(() => this.updateUsers(), 5000); //refresh users every 5 seconds
     }
 })
+window.onbeforeunload = app.removeUser;
+

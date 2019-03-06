@@ -2,7 +2,7 @@ from flask import Flask, render_template, session, flash, url_for, redirect, req
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-import random, string, datetime, os, OpenSSL
+import random, string, datetime, os, json #OpenSSL
 from utils import utilities
 
 
@@ -153,19 +153,44 @@ def logout():
     return redirect(url_for('home'))
 
 
-@app.route('addUser',methods=['POST'])
-def addUsere():
+@app.route('/addUser',methods=['POST'])
+def addUser():
     if frequest.method == 'POST':
-        uname = frequest['guestName']
+        uname = json.loads(frequest.data.decode())['guestName']
         for u in users:
             if u == uname:
                 return jsonify({
-                    'message' : 'Already user with that name'
+                    'message' : 'Already user with that name [{}]'.format(uname)
                 })
         users.append(uname)
+        print("Appended %s" % uname)
+        print(users)
         return jsonify({
             'status' : 200,
-            'message' : 'Success'
+            'message' : 'Success',
+            'user' : uname
+        })
+    else:
+        return jsonify({
+            'status' : 401,
+            'message' : 'Please use POST request'
+        })
+
+@app.route('/getUsers',methods=['GET'])
+def getUsers():
+    return jsonify({
+        'users' : users
+    })
+
+
+@app.route('/removeUser',methods=['POST'])
+def removeUser():
+    if frequest.method == 'POST':
+        uname = json.loads(frequest.data.decode())['guestName']
+        users.remove(uname)
+        print(users)
+        return jsonify({
+            'status':200
         })
     else:
         return jsonify({
@@ -189,5 +214,5 @@ def startServer():
     #print("<<Generating session keys>>")
     #generateRoomKeys()
 
-    app.run(host='0.0.0.0', debug=True, ssl_context='adhoc')
+    app.run(host='0.0.0.0', debug=True)
 
