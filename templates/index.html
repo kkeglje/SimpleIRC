@@ -70,7 +70,16 @@
                     <!------Chat------->
                     <b-col cols="8" id="chat">
                         Chat
-
+                        <ul>
+                            <li v-for="(data,index) in messages">
+                                <p v-if="data.name==user" id="message_SELF">[[data.msg ]]</p>
+                                <p v-else id="message_OTHER">[[data.name]]: [[ data.msg ]]</p>
+                            </li>
+                        </ul>
+                        <input type="text" id="messageInput">
+                        <button class="btn btn-warning" @click="sendMessage()">
+                            Send
+                        </button>
                     </b-col>
 
                     <!------Users------->

@@ -8,14 +8,16 @@ window.app = new Vue({
         users: [],
         user: "",
         showModal: true,
-        error: 'false'
+        error: 'false',
+        messages: [],
+        activeChannel: "Home"
     },
     delimiters: ['[[',']]'],
     methods: {
         newUser(){
             app.user = document.getElementById("guestName").value
             axios
-                .post('addUser',{'guestName' : app.user})
+                .post('/addUser',{'guestName' : app.user})
                 .then(
                     function(response){
                         if(response.data['status'] == 200){
@@ -36,16 +38,34 @@ window.app = new Vue({
             axios
                 .get('/getUsers')
                 .then(
-                    response=>(app.users = response.data['users'])
+                    response => (app.users = response.data['users'])
                 )
         },
         removeUser(){
             axios
                 .post('/removeUser',{'guestName': app.user})
+        },
+        sendMessage(){
+            var channel = app.activeChannel
+            var usr = app.user
+            var message = document.getElementById("messageInput").value
+            var t = new Date()
+            t = `${t.getFullYear()}:${t.getMonth()+1}:${t.getDate()}:${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}`
+            console.log(t)
+            console.log(new Date().getDay())
+            axios
+                .post('/addMessage',{'channel':channel,'name':usr,'msg':message,'time':t})
+                .then(response=>(console.log(response.data['message']),app.updateMessages()))
+        },
+        updateMessages(){
+            axios
+                .get('/getMessages',{'channel':app.activeChannel})
+                .then(response =>(app.messages = response.data['messages']))
         }
     },
     created(){
         this.interval = setInterval(() => this.updateUsers(), 5000); //refresh users every 5 seconds
+        this.interval = setInterval(() => this.updateMessages(),1000); //refresh messages ever second
     }
 })
 window.onbeforeunload = app.removeUser;

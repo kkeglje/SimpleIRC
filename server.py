@@ -1,37 +1,68 @@
 from flask import Flask, render_template, session, flash, url_for, redirect, request as frequest, jsonify
 from functools import wraps
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-import random, string, datetime, os, json #OpenSSL
+import random, string, time, os, json #OpenSSL
 from utils import utilities
 
 
 app = Flask(__name__)
 app.secret_key = "SESSION_RANDOM_KEY_CHANGE_THIS_IN_PRODUCTION"
-app.config['DATABASE_FILE'] = 'users.sqlite'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.sqlite'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['APP_DIR'] = os.path.realpath(os.path.dirname(__file__))
 
-db = SQLAlchemy(app)
-
-users = ["test"]
+ALL_users = []
+channels = []
 
 # Classes
-class User(db.Model):
-    '''
-    username[string],
-    admin[string(True or False)],
-    password[hashed str],
-    email[string]
-    '''
-    id = db.Column('user_id', db.Integer, primary_key=True)
-    username = db.Column(db.String(16), unique=True, nullable=False)
-    admin = db.Column(db.String(5))
-    password = db.Column(db.String(64), nullable=False)
-    email = db.Column(db.String(64), nullable=False)
+class User():
+    def __init__(self,username,admin,password,email):
+        '''
+        username[string],
+        admin[string(True or False)],
+        password[hashed str],
+        email[string]
+        '''
+        self.username = username
+        self.admin = admin
+        self.password = password
+        self.email = email
+
+    def makeAdmin(self):
+        if not self.admin: self.admin = True
+        else: print("Already an admin")
+
+    def removeAdmin(self):
+        if self.admin: self.admin = False
+        else: print("Already not admin")
+
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+class Channel():
+    '''
+    name[string],
+    admins[array of strings]
+    users[array of strings]
+    '''
+    def __init__(self,name,admins,users):
+        self.name = name
+        self.messages = [{'name':name,'time': time.strftime("%Y:%m:%d:%H:%M:%S"),'msg':'Welcome to {}'.format(name)}]
+        self.admins = admins
+        self.users = users
+
+    def saveMessages(self):
+        print("TODO: save messages to " + self.name)
+    
+    def addMessage(self,name,time,message):
+        '''
+        Adds message to channel
+        name[string]
+        time[array build like Y,d,m,H,M]
+        message[actual message]
+        '''
+        self.messages.append({'name': name,'time': ':'.join(time), 'msg':message})
+
+    def __repr__(self):
+        return self.name
 
 
 # ========Auth=========
@@ -50,121 +81,25 @@ def login_required(test):
                     )    
     return wrap
 
-def admin_required(test):
-    @wraps(test)
-    def wrap(*args,**kwargs):
-        if session['admin']==True:
-            return test(*args,**kwargs)
-        else:
-            return render_template(
-                    '403.html',
-                    error=jsonify({
-                            'status': 403,
-                            'message': 'You are not authorized to access that site!'
-                        })
-                    )   
-    return wrap
-
 
 # =======APP.ROUTE========
 @app.route('/')
 def home():
     return render_template('index.html')
 
-@app.route('/login', methods=['GET','POST'])
-def login():
-    error = None
-    if frequest.method == 'POST':
-        uname = frequest.form['username']
-        passw = frequest.form['password']
-        t = User.query.filter_by(username=uname).first()
-        if t==None:
-            error = "There is no user with that name"
-        elif t.admin == "True" and check_password_hash("pbkdf2:sha256:50000$"+t.password, passw):
-            session['admin'] = True
-            session['logged_in'] = True
-            return redirect(url_for('home'))
-        elif check_password_hash("pbkdf2:sha256:50000$"+t.password, passw):
-            session['logged_in'] = True
-            session['admin'] = False
-            return redirect(url_for('home'))
-        else:
-            error = "Wrong username/password"
-    return render_template('login.html', error=error)
- 
-
-@app.route('/registration', methods=['GET','POST'])
-def registration():
-    error = None
-    if frequest.method == 'POST':
-        uname = frequest.form['username']
-        passw = frequest.form['password']
-        rpassw = frequest.form['rpassword']
-        email = frequest.form['email']
-        setToAdmin = "False"
-        if frequest.form.get('admin'):
-            setToAdmin = "True"
-        if User.query.filter_by(username=uname).first() != None:
-            error = ""
-            return render_template(
-                    'registration.html',
-                    error=jsonify({
-                            'status': 400,
-                            'message': 'Username already taken!'
-                        })
-                    )
-        elif User.query.filter_by(email=email).first() != None:
-            return render_template(
-                    'registration.html',
-                    error=jsonify({
-                            'status': 400,
-                            'message': 'Email already taken!'
-                        })
-                    )
-        elif passw!=rpassw:
-            return render_template(
-                    'registration.html',
-                    error=jsonify({
-                            'status': 400,
-                            'message': 'Your passwords dont match'
-                        })
-                    )    
-        if uname == "" or passw == "" or email == "":
-            return render_template(
-                        'registration.html',
-                        error=jsonify({
-                            'status': 400,
-                            'message': 'Please fill in empty fields'
-                            })
-                        )
-        u = User(username=uname, email=email, admin=setToAdmin, password=generate_password_hash(passw)[20:])        
-        db.session.add(u)
-        db.session.commit()
-        return redirect(url_for('success'))
-    else:
-        return render_template('registration.html', error=error)
-
-
-@app.route('/logout')
-@login_required
-def logout():
-    session.pop('logged_in', False)
-    session.pop('admin', False)
-    return redirect(url_for('home'))
-
 
 @app.route('/addUser',methods=['POST'])
 def addUser():
     if frequest.method == 'POST':
         uname = json.loads(frequest.data.decode())['guestName']
-        for u in users:
+        for u in ALL_users:
             if u == uname:
                 return jsonify({
                     'message' : 'Already user with that name [{}]'.format(uname)
                 })
-        users.append(uname)
+        ALL_users.append(uname)
         print("Appended %s" % uname)
-        print(users)
+        channels[0].users.append(uname)
         return jsonify({
             'status' : 200,
             'message' : 'Success',
@@ -179,7 +114,7 @@ def addUser():
 @app.route('/getUsers',methods=['GET'])
 def getUsers():
     return jsonify({
-        'users' : users
+        'users' : ALL_users
     })
 
 
@@ -187,8 +122,7 @@ def getUsers():
 def removeUser():
     if frequest.method == 'POST':
         uname = json.loads(frequest.data.decode())['guestName']
-        users.remove(uname)
-        print(users)
+        ALL_users.remove(uname)
         return jsonify({
             'status':200
         })
@@ -198,18 +132,58 @@ def removeUser():
             'message' : 'Please use POST request'
         })
 
+@app.route('/getMessages',methods=['GET'])
+def getMessages():
+    # print("0-------------------0")
+    # print(frequest.data.decode())
+    # print("0-------------------0")
+    chan = "Home" #json.loads(frequest.data.decode())['channel']
+    for c in channels:
+        if c.name==chan:
+            return jsonify({
+                'messages': c.messages
+            })
+    else: return jsonify({
+                'status': 400,
+                'message': "There is no channel named %s" % channel
+            })
+
+
+@app.route('/addMessage',methods=['POST'])
+def addMessage():
+    if frequest.method == 'POST':
+        channel = json.loads(frequest.data.decode())['channel']
+        usr = json.loads(frequest.data.decode())['name']
+        message = json.loads(frequest.data.decode())['msg']
+        time = json.loads(frequest.data.decode())['time']
+        time = str(time).split(':') #Y:d:m:H:M:s
+        print("Adding message {0} to channel {1} from user {2} [{3}]".format(message,channel,usr,':'.join(time)))
+        for c in channels:
+            if c.name==channel:
+                c.addMessage(usr,time,message)
+                return jsonify({
+                    'status': 200,
+                    'message': 'Added message'
+                })
+        else: return jsonify({
+                'status': 400,
+                'message': "There is no channel named %s" % channel
+            })
+        
+    else:
+        return jsonify({
+            'status' : 401,
+            'message' : 'Please use POST request'
+        })
+
+
+
 
 def startServer():
-    print(" <<Checking for database>>")
-    db_path = os.path.join(app.config['APP_DIR'], app.config['DATABASE_FILE'])
-    if not os.path.exists(db_path):
-        print("<<Cannot find db>> ->Building test base..")
-        utilities.test_db(db,User(username="admin", email="admin@admin", password=generate_password_hash("admin")[20:], admin="True"))
-    else:
-        print("    <<Found database>>")
-
     print("    <<Starting server>>")
-    
+    ALL_users.append('test')
+    channels.append(Channel("Home",['test'],['test']))
+
     #TODO:
     #print("<<Generating session keys>>")
     #generateRoomKeys()

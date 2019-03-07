@@ -28,6 +28,17 @@ ul{
     display: inline;
 }
 
+#message_SELF{
+    float: right;
+}
+#message_OTHER{
+    float: left;
+}
+
+#chat>ul{
+    display: initial;
+}
+
 
 /******************
     MODAL PROMPT

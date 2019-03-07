@@ -1,14 +1,3 @@
-def test_db(db,user):
-    """
-    Generate new database with admin:admin user
-    @params: SQLALchemy object
-    """
-    db.drop_all()
-    db.create_all()
-    test = user
-    db.session.add(test)
-    db.session.commit()
-
 #TODO:
 # def generateRoomKeys():
 #     global ROOM_IDs
