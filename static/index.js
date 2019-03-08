@@ -45,17 +45,21 @@ window.app = new Vue({
             axios
                 .post('/removeUser',{'guestName': app.user})
         },
+        handleEnter(e){
+            if(e.keyCode === 13){
+                this.sendMessage();
+            }
+        },
         sendMessage(){
             var channel = app.activeChannel
             var usr = app.user
             var message = document.getElementById("messageInput").value
             var t = new Date()
             t = `${t.getFullYear()}:${t.getMonth()+1}:${t.getDate()}:${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}`
-            console.log(t)
-            console.log(new Date().getDay())
             axios
                 .post('/addMessage',{'channel':channel,'name':usr,'msg':message,'time':t})
                 .then(response=>(console.log(response.data['message']),app.updateMessages()))
+            document.getElementById("messageInput").value="";
         },
         updateMessages(){
             axios
