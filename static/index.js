@@ -10,6 +10,7 @@ window.app = new Vue({
         showModal: true,
         error: 'false',
         messages: [],
+        rooms:["Home","Learning"],
         activeChannel: "Home"
     },
     delimiters: ['[[',']]'],

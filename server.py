@@ -181,8 +181,7 @@ def addMessage():
 
 def startServer():
     print("    <<Starting server>>")
-    ALL_users.append('test')
-    channels.append(Channel("Home",['test'],['test']))
+    channels.append(Channel("Home",[],[]))
 
     #TODO:
     #print("<<Generating session keys>>")

@@ -64,6 +64,14 @@
                     <!------Rooms------->
                     <b-col cols="2" id="rooms">
                         Rooms
+                        <div id="roomsDiv">
+                            <ul>
+                                <li v-for="(room,index) in rooms">
+                                    <p> [[ room ]] </p>
+                                    <br>
+                                </li>
+                            </ul>
+                        </div>
                     </b-col>
 
                     <!------Chat------->
@@ -71,9 +79,9 @@
                         Chat
                         <div id="messagesDiv">
                             <ul>
-                                <li v-for="(data,index) in messages">
-                                    <p v-if="data.name==user" id="message_SELF">[[data.msg ]]</p>
-                                    <p v-else id="message_OTHER">[[data.name]]: [[ data.msg ]]</p>
+                                <li v-for="(message,index) in messages">
+                                    <p v-if="message.name==user" id="message_SELF">[[message.msg ]]</p>
+                                    <p v-else id="message_OTHER">[[message.name]]: [[ message.msg ]]</p>
                                     <br> <!--Break on every message-->
                                 </li>
                             </ul>
