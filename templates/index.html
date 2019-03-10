@@ -67,7 +67,8 @@
                         <div id="roomsDiv">
                             <ul>
                                 <li v-for="(room,index) in rooms">
-                                    <p> [[ room ]] </p>
+                                    <b-button v-if="room==activeChannel" variant="outline-primary">[[ room ]]</b-button>
+                                    <b-button v-else @click="changeChannel(room)">[[ room ]]</b-button>
                                     <br>
                                 </li>
                             </ul>

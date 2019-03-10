@@ -137,7 +137,7 @@ def getMessages():
     # print("0-------------------0")
     # print(frequest.data.decode())
     # print("0-------------------0")
-    chan = "Home" #json.loads(frequest.data.decode())['channel']
+    chan = frequest.args.get('channel') #
     for c in channels:
         if c.name==chan:
             return jsonify({
@@ -181,8 +181,8 @@ def addMessage():
 
 def startServer():
     print("    <<Starting server>>")
-    channels.append(Channel("Home",[],[]))
-
+    channels.extend([Channel("Home",[],[]),Channel("Learning",[],[])])
+    
     #TODO:
     #print("<<Generating session keys>>")
     #generateRoomKeys()

@@ -57,6 +57,7 @@ window.app = new Vue({
             var message = document.getElementById("messageInput").value
             var t = new Date()
             t = `${t.getFullYear()}:${t.getMonth()+1}:${t.getDate()}:${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}`
+            console.log(`${channel} ${this.activeChannel}`)
             axios
                 .post('/addMessage',{'channel':channel,'name':usr,'msg':message,'time':t})
                 .then(response=>(console.log(response.data['message']),app.updateMessages()))
@@ -64,8 +65,12 @@ window.app = new Vue({
         },
         updateMessages(){
             axios
-                .get('/getMessages',{'channel':app.activeChannel})
+                .get('/getMessages',{params: {'channel':app.activeChannel}})
                 .then(response =>(app.messages = response.data['messages']))
+        },
+        changeChannel(name){
+            this.activeChannel = name;
+            app.updateMessages()
         }
     },
     created(){
