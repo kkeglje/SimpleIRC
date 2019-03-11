@@ -169,14 +169,38 @@ def addMessage():
                 'status': 400,
                 'message': "There is no channel named %s" % channel
             })
-        
     else:
         return jsonify({
             'status' : 401,
             'message' : 'Please use POST request'
         })
 
+@app.route('/addChannel',methods=['POST'])
+def addChannel():
+    if frequest.method == 'POST':
+        channel = json.loads(frequest.data.decode())['channel']
+        if channel in channels:
+            return jsonify({
+                'status': 400,
+                'message': 'Already channel with that name'
+            })
+        else:
+            channels.append(channel)
+            return jsonify({
+                'status': 201,
+                'message': 'Created new channel {0}'.format(channel)
+            })
+    else:
+        return jsonify({
+            'status' : 401,
+            'message' : 'Please use POST request'
+        })
 
+@app.route('/getChannels',methods=['GET'])
+def getChannels():
+    return jsonify({
+        'channels': channels
+    })
 
 
 def startServer():

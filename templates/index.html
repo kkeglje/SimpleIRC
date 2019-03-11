@@ -47,6 +47,7 @@
 
     <body>
         <div id="app">
+                <!-------------MODALS-------------->
                 <modal v-if="showModal" @close="showModal = false">
                     <h3 slot="header">Enter your temporary username</h3>
                     <div slot="body">
@@ -58,12 +59,25 @@
                             Join
                         </button>
                     </div>
-              </modal>
+                </modal>
+                <modal v-if="showroomModal" @close="showroomModal = false">
+                    <h3 slot="header">Enter room name</h3>
+                    <div slot="body">
+                        <input type="text" id="roomName"><br>
+                        <div v-if="error != 'false'">[[ error ]]</div>
+                    </div>
+                    <div slot="footer">
+                        <button class="btn btn-danger" @click="addChannel()">
+                            Create
+                        </button>
+                    </div>
+                </modal>
             <b-container>
                 <b-row>
                     <!------Rooms------->
                     <b-col cols="2" id="rooms">
-                        Rooms
+                        Rooms <br>
+                        <b-button variant="success" @click="showroomModal=true">Add new room</b-button>
                         <div id="roomsDiv">
                             <ul>
                                 <li v-for="(room,index) in rooms">

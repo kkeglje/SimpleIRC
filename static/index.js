@@ -8,6 +8,7 @@ window.app = new Vue({
         users: [],
         user: "",
         showModal: true,
+        showroomModal:false,
         error: 'false',
         messages: [],
         rooms:["Home","Learning"],
@@ -71,11 +72,31 @@ window.app = new Vue({
         changeChannel(name){
             this.activeChannel = name;
             app.updateMessages()
+        },
+        addChannel(){
+            roomName = document.getElementById("roomName").value
+            console.log(roomName)
+            axios
+                .post('/addChannel', {'channel':roomName})
+                .then(
+                    function(r){
+                        if(r.data['status']==201){
+                            app.rooms.push(roomName)
+                        }else{
+                            console.log(r.data['message'])
+                        }
+                },app.showroomModal=false)
+        },
+        updateRooms(){
+            axios
+                .get('/getChannels')
+                .then(response=>(app.rooms = response.data['channels']))
         }
     },
     created(){
         this.interval = setInterval(() => this.updateUsers(), 5000); //refresh users every 5 seconds
         this.interval = setInterval(() => this.updateMessages(),1000); //refresh messages ever second
+        this.interval = setInterval(() => this.updateRooms(),5000); //refresh channels every 5 sec
     }
 })
 window.onbeforeunload = app.removeUser;
