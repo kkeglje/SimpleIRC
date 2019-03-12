@@ -33,7 +33,10 @@ window.app = new Vue({
                             console.log(this.error);
                         };
                     },
-                    app.updateUsers()
+                    app.updateRooms(),
+                    app.updateUsers(),
+                    app.interval = setInterval(() => app.updateMessages(),1000) //refresh messages ever second
+
                 )
         },
         updateUsers(){
@@ -90,12 +93,11 @@ window.app = new Vue({
         updateRooms(){
             axios
                 .get('/getChannels')
-                .then(response=>(app.rooms = response.data['channels']))
+                .then(response=>(app.rooms = response.data['channels'].split('|')))
         }
     },
     created(){
         this.interval = setInterval(() => this.updateUsers(), 5000); //refresh users every 5 seconds
-        this.interval = setInterval(() => this.updateMessages(),1000); //refresh messages ever second
         this.interval = setInterval(() => this.updateRooms(),5000); //refresh channels every 5 sec
     }
 })

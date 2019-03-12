@@ -185,7 +185,7 @@ def addChannel():
                 'message': 'Already channel with that name'
             })
         else:
-            channels.append(channel)
+            channels.append(Channel(channel,[],[]))
             return jsonify({
                 'status': 201,
                 'message': 'Created new channel {0}'.format(channel)
@@ -199,7 +199,7 @@ def addChannel():
 @app.route('/getChannels',methods=['GET'])
 def getChannels():
     return jsonify({
-        'channels': channels
+        'channels': '|'.join((x.name for x in channels))
     })
 
 
