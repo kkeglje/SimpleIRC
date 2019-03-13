@@ -1,7 +1,5 @@
-# SimpleIRC
+# Simple Chat
 Work in progress
-
-Current stage: Complete code refactor, this will be implemented with RESTfull architectural style
 
 * [ ] public chat rooms with tmp accounts
 * [ ] permanent accounts
