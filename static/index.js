@@ -50,9 +50,22 @@ window.app = new Vue({
             axios
                 .post('/removeUser',{'guestName': app.user})
         },
-        handleEnter(e){
+        handleEnter(e,msg){
             if(e.keyCode === 13){
-                this.sendMessage();
+                switch (msg) {
+                    case 'sendMessage':
+                        this.sendMessage();        
+                        break;
+                    case 'addChannel':
+                        this.addChannel();
+                        break;
+                    case 'addUser':
+                        this.newUser();
+                        break;
+                    default:
+                        break;
+                }
+                
             }
         },
         sendMessage(){

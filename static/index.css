@@ -87,7 +87,7 @@ ul{
   }
   
   .modal-container {
-    width: 80%;
+    width: 30%;
     margin: 0px auto;
     padding: 20px 30px;
     background-color: #fff;
@@ -104,8 +104,6 @@ ul{
   
   .modal-body {
     margin: 20px 0;
-    overflow-y: scroll;
-    height: 300px;
   }
   
   .modal-default-button {
